@@ -4,7 +4,9 @@ The general organization of the project is defined in the `project_config/projec
 
 The specific information of the project is defined in the `project_config/project_definition.md` file. THis file is more business oriented, specifically for the project but may also contain specific technical requirements.
 
+Those files must be well understood at anytime of the project.
+
 # AI behaviour
 
 * All the generated documents must be produced in english
-* Never generate any document without a consent; always explain before generating and ask confirmation in case of doubt.
+* Never generate any document without a consent; always explain before generating and ask confirmation.
