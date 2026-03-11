@@ -1,4 +1,4 @@
-.PHONY: init dev-start dev-down dev-logs dev-clean dev-full-clean prod set-version show-version
+.PHONY: init dev-start dev-down dev-logs dev-clean dev-full-clean prod set-version show-version quality quality-backend quality-frontend
 
 VERSION := $(shell cat VERSION)
 
@@ -50,6 +50,23 @@ init:
 	@echo "✅ Everything initialized. You can now run: make dev-start"
 
 ## ─────────────────────────────────────────────
+## QUALITY
+## ─────────────────────────────────────────────
+
+## Run backend + frontend quality checks (Checkstyle + ESLint + TypeScript)
+quality: quality-backend quality-frontend
+
+quality-backend:
+	@echo "🔎 Backend quality checks (Checkstyle)"
+	cd backend && mvn --batch-mode -q checkstyle:check
+
+quality-frontend:
+	@echo "🔎 Frontend quality checks (ESLint + TypeScript)"
+	cd frontend && ([ -d node_modules ] || npm ci)
+	cd frontend && npm run lint
+	cd frontend && npx tsc --noEmit
+
+## ─────────────────────────────────────────────
 ## PROD
 ## ─────────────────────────────────────────────
 
@@ -90,6 +107,6 @@ dev-clean:
 	@echo "✓ Dev services cleaned and stopped"
 
 ## Full stop, clean and restart
-dev-full-clean:
+dev-full-restart:
 	make dev-clean
 	make dev-start

@@ -22,7 +22,8 @@
 
         <!-- Whitespace -->
         <module name="WhitespaceAround"/>
-        <module name="NoWhitespaceAtEndOfLine"/>
+        <!-- NoWhitespaceAtEndOfLine is removed because it can cause classloading issues in some environments.
+             We keep a RegexpSingleline check later to cover trailing whitespace. -->
 
         <!-- Braces -->
         <module name="NeedBraces"/>

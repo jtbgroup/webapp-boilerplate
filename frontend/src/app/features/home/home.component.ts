@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,5 +30,5 @@ import { AuthService } from '../../core/services/auth.service';
   `]
 })
 export class HomeComponent {
-  constructor(public authService: AuthService) {}
+  authService = inject(AuthService);
 }
