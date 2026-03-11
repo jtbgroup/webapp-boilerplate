@@ -26,7 +26,7 @@ COPY frontend/ ./frontend/
 EXPOSE 8080 5005
 
 CMD ["sh", "-c", \
-  "cd /app/frontend && ng build --watch --output-path /app/backend/src/main/resources/static & \
-   sleep 10 && \
+  "cd /app/frontend && ng build --watch --configuration development --output-path /app/backend/target/classes/static & \
+   sleep 30 && \
    cd /app/backend && mvn spring-boot:run \
      -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'"]

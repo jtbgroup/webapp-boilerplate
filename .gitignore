@@ -25,3 +25,6 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# backend
+backend/src/main/resources/static/
