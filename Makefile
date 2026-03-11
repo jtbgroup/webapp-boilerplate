@@ -53,9 +53,17 @@ init:
 ## PROD
 ## ─────────────────────────────────────────────
 
-## Start production environment
+## Start production environment (build + run)
 prod:
-	docker compose up --build
+	docker compose up --build -d
+
+## Stop production environment
+prod-down:
+	docker compose down
+
+## View production logs
+prod-logs:
+	docker compose logs -f
 
 ## ─────────────────────────────────────────────
 ## DEV

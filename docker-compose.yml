@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-webappboilerplate}
       POSTGRES_USER: ${POSTGRES_USER:-webappboilerplate}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webappboilerplate}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,12 +20,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8090:8090"
+      - "8080:8080"
     environment:
       DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-webappboilerplate}
       DB_USERNAME: ${POSTGRES_USER:-webappboilerplate}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      SERVER_PORT: 8090
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-webappboilerplate}
+      SERVER_PORT: 8081
     depends_on:
       db:
         condition: service_healthy

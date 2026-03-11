@@ -12,15 +12,32 @@ WORKDIR /app/backend
 COPY backend/pom.xml ./
 RUN mvn dependency:go-offline -q
 COPY backend/src ./src
-# Copy built frontend into Spring Boot static resources
-COPY --from=frontend-build /app/frontend/dist/webappboilerplate/browser ./src/main/resources/static
 RUN mvn package -DskipTests -q
 
-# ─── Stage 3: Production image ─────────────────────────────────────────────
+# ─── Stage 3: Production image (nginx + backend) ───────────────────────────
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache nginx
+
 WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Ensure nginx directories are writable by the app user
+RUN mkdir -p /var/log/nginx /var/run /etc/nginx/http.d && \
+    chown -R appuser:appgroup /var/log/nginx /var/run /etc/nginx/http.d /var/lib/nginx /run
+
+# Copy built artifacts
 COPY --from=backend-build /app/backend/target/*.jar app.jar
+COPY --from=frontend-build /app/frontend/dist/webappboilerplate/browser /app/static
+
+# nginx config
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+RUN rm -f /etc/nginx/http.d/default.conf
+COPY docker/nginx.prod.conf /etc/nginx/http.d/default.conf
+
+# Entrypoint that runs nginx + backend together
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER appuser
-EXPOSE 8090
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

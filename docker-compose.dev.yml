@@ -16,25 +16,41 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - "8080:8080"   # nginx → frontend + proxy /api
-      - "5005:5005"   # remote debug
+  backend:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /app/backend
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       DB_URL: jdbc:postgresql://db:5432/webappboilerplate
       DB_USERNAME: webappboilerplate
       DB_PASSWORD: webappboilerplate
-    depends_on:
-      db:
-        condition: service_healthy
+      SERVER_PORT: 8080
     volumes:
-      - ./backend:/app/backend       # Spring Boot source (hot-reload Java)
-      - ./frontend:/app/frontend     # Angular source (ng build --watch)
+      - ./backend:/app/backend
       - maven_cache:/root/.m2
+    command: sh -c "cd /app/backend && mvn -q spring-boot:run"
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app/frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app/frontend
       - node_modules:/app/frontend/node_modules
+    command: sh -c "cd /app/frontend && npm ci && npm run start -- --host 0.0.0.0 --port 4200"
+
+  nginx:
+    image: nginx:1.28-alpine
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
   pg_data_dev:
