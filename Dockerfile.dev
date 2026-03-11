@@ -1,0 +1,32 @@
+FROM maven:3.9-eclipse-temurin-21
+
+# Install Node.js 22
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g @angular/cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Pre-cache Maven dependencies
+COPY backend/pom.xml ./backend/
+RUN cd backend && mvn dependency:go-offline -q
+
+# Install Node dependencies
+COPY frontend/package*.json ./frontend/
+RUN cd frontend && npm install
+
+# Copy source
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+
+# Build frontend once at startup, then watch
+# Spring Boot serves static files from backend/src/main/resources/static
+EXPOSE 8080 5005
+
+CMD ["sh", "-c", \
+  "cd /app/frontend && ng build --watch --output-path /app/backend/src/main/resources/static & \
+   sleep 10 && \
+   cd /app/backend && mvn spring-boot:run \
+     -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'"]

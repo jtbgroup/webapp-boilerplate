@@ -1,4 +1,4 @@
-.PHONY: init dev prod down logs clean
+.PHONY: init dev-start dev-down dev-logs dev-clean dev-full-clean prod
 
 ## Initialize the project (run once before first dev start)
 ## Requires Node.js and @angular/cli installed locally
@@ -9,8 +9,10 @@ init:
 		echo "🔧 Initializing Angular project..."; \
 		cd frontend && ng new webappboilerplate --standalone --routing --style=scss --skip-git --directory . && \
 		ng add @angular/material --skip-confirmation; \
-		echo "✅ Angular initialized. You can now run: make dev"; \
+		echo "✅ Angular initialized."; \
 	fi
+	cd frontend && npm install
+	@echo "✅ Everything initialized. You can now run: make dev-start"
 
 ##############
 # PROD
@@ -24,12 +26,11 @@ prod:
 # DEV
 ##############
 
-## Start development environment (hot reload)
+## Start development environment
 dev-start:
 	docker compose -f docker-compose.dev.yml up -d --build
 	@echo "✓ Dev services started"
-	@echo "  Frontend : http://localhost:4300"
-	@echo "  Backend  : http://localhost:8080"
+	@echo "  App : http://localhost:8080"
 
 ## Stop all containers
 dev-down:

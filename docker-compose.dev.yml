@@ -16,9 +16,9 @@ services:
       timeout: 5s
       retries: 10
 
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile.dev
     ports:
       - "8080:8080"
@@ -31,23 +31,12 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
       - maven_cache:/root/.m2
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "4300:4300"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
+      - node_modules:/app/frontend/node_modules
 
 volumes:
   pg_data_dev:
   maven_cache:
+  node_modules:
