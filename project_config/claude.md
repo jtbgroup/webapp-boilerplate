@@ -10,3 +10,9 @@ Those files must be well understood at anytime of the project.
 
 * All the generated documents must be produced in english
 * Never generate any document without a consent; always explain before generating and ask confirmation.
+
+# Startup behavior
+At the beginning of EVERY conversation, Claude MUST:
+1. Read `project_config/project_requirements.md`
+2. Read `project_config/project_definition.md`
+3. Confirm explicitly that both files have been read before doing anything else.
