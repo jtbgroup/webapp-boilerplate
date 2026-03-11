@@ -1,4 +1,39 @@
-.PHONY: init dev-start dev-down dev-logs dev-clean dev-full-clean prod
+.PHONY: init dev-start dev-down dev-logs dev-clean dev-full-clean prod set-version show-version
+
+VERSION := $(shell cat VERSION)
+
+## ─────────────────────────────────────────────
+## VERSION MANAGEMENT
+## ─────────────────────────────────────────────
+
+## Show current version
+show-version:
+	@echo "Current version: $(VERSION)"
+
+## Set a new version: make set-version V=x.y.z
+set-version:
+	@if [ -z "$(V)" ]; then \
+		echo "❌ Usage: make set-version V=x.y.z"; \
+		exit 1; \
+	fi
+	@echo "$(V)" > VERSION
+	@# Update backend pom.xml
+	@mvn -f backend/pom.xml versions:set -DnewVersion=$(V) -DgenerateBackupPoms=false -q
+	@# Update frontend package.json
+	@cd frontend && npm version $(V) --no-git-tag-version --allow-same-version > /dev/null
+	@# Update Angular environment files
+	@sed -i "s/appVersion: '[^']*'/appVersion: '$(V)'/" frontend/src/environments/environment.ts
+	@sed -i "s/appVersion: '[^']*'/appVersion: '$(V)'/" frontend/src/environments/environment.prod.ts
+	@echo "✅ Version set to $(V)"
+	@echo "   • VERSION"
+	@echo "   • backend/pom.xml"
+	@echo "   • frontend/package.json"
+	@echo "   • frontend/src/environments/environment.ts"
+	@echo "   • frontend/src/environments/environment.prod.ts"
+
+## ─────────────────────────────────────────────
+## INIT
+## ─────────────────────────────────────────────
 
 ## Initialize the project (run once before first dev start)
 ## Requires Node.js and @angular/cli installed locally
@@ -14,17 +49,17 @@ init:
 	cd frontend && npm install
 	@echo "✅ Everything initialized. You can now run: make dev-start"
 
-##############
-# PROD
-##############
+## ─────────────────────────────────────────────
+## PROD
+## ─────────────────────────────────────────────
 
 ## Start production environment
 prod:
 	docker compose up --build
 
-##############
-# DEV
-##############
+## ─────────────────────────────────────────────
+## DEV
+## ─────────────────────────────────────────────
 
 ## Start development environment
 dev-start:

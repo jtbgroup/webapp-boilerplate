@@ -1,7 +1,7 @@
 FROM maven:3.9-eclipse-temurin-21
 
-# Install Node.js 22
-RUN apt-get update && apt-get install -y curl && \
+# Install Node.js 22, Angular CLI, and nginx
+RUN apt-get update && apt-get install -y curl nginx && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g @angular/cli && \
@@ -9,24 +9,34 @@ RUN apt-get update && apt-get install -y curl && \
 
 WORKDIR /app
 
-# Pre-cache Maven dependencies
+# ── Pre-cache Maven dependencies ──────────────────────────────────────────
 COPY backend/pom.xml ./backend/
 RUN cd backend && mvn dependency:go-offline -q
 
-# Install Node dependencies
+# ── Pre-cache Node dependencies ───────────────────────────────────────────
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm install
 
-# Copy source
+# ── Copy source (overridden by volumes at runtime) ────────────────────────
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 
-# Build frontend once at startup, then watch
-# Spring Boot serves static files from backend/src/main/resources/static
+# ── nginx config ──────────────────────────────────────────────────────────
+COPY docker/nginx.dev.conf /etc/nginx/conf.d/default.conf
+RUN rm -f /etc/nginx/sites-enabled/default
+
+RUN mkdir -p /app/static
+
 EXPOSE 8080 5005
 
-CMD ["sh", "-c", \
-  "cd /app/frontend && ng build --watch --configuration development --output-path /app/backend/target/classes/static & \
-   sleep 30 && \
-   cd /app/backend && mvn spring-boot:run \
-     -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'"]
+# ── Startup: run all three processes ──────────────────────────────────────
+# 1. nginx             → port 8080, sert /app/static et proxifie /api → 8081
+# 2. ng build --watch  → rebuild Angular dans /app/static à chaque changement
+# 3. Spring Boot       → port interne 8081
+CMD ["sh", "-c", "\
+  nginx && \
+  cd /app/frontend && ng build --watch --configuration development --output-path /app/static & \
+  cd /app/backend && mvn spring-boot:run \
+    -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005' \
+    -Dserver.port=8081 \
+"]

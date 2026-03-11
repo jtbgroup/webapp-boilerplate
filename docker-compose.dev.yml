@@ -21,8 +21,8 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080"
-      - "5005:5005"
+      - "8080:8080"   # nginx → frontend + proxy /api
+      - "5005:5005"   # remote debug
     environment:
       DB_URL: jdbc:postgresql://db:5432/webappboilerplate
       DB_USERNAME: webappboilerplate
@@ -31,8 +31,8 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app/backend
-      - ./frontend:/app/frontend
+      - ./backend:/app/backend       # Spring Boot source (hot-reload Java)
+      - ./frontend:/app/frontend     # Angular source (ng build --watch)
       - maven_cache:/root/.m2
       - node_modules:/app/frontend/node_modules
 
