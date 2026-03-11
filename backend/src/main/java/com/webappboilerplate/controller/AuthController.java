@@ -1,8 +1,8 @@
-package com.productgen.controller;
+package com.webappboilerplate.controller;
 
-import com.productgen.dto.AuthDtos.LoginRequest;
-import com.productgen.dto.AuthDtos.UserResponse;
-import com.productgen.repository.AppUserRepository;
+import com.webappboilerplate.dto.AuthDtos.LoginRequest;
+import com.webappboilerplate.dto.AuthDtos.UserResponse;
+import com.webappboilerplate.repository.AppUserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;

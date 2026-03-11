@@ -1,4 +1,4 @@
-package com.productgen.security;
+package com.webappboilerplate.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

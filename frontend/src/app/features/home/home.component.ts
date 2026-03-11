@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [MatToolbarModule, MatButtonModule, MatIconModule],
   template: `
     <mat-toolbar color="primary">
-      <span>ProductGen</span>
+      <span>webappboilerplate</span>
       <span class="spacer"></span>
       <span class="username">{{ authService.currentUser()?.username }}</span>
       <button mat-icon-button (click)="authService.logout()" title="Logout">

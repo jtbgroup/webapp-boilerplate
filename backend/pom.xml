@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.productgen</groupId>
-    <artifactId>productgen-backend</artifactId>
+    <groupId>com.webappboilerplate</groupId>
+    <artifactId>webappboilerplate-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>productgen-backend</name>
-    <description>ProductGen Backend</description>
+    <name>webappboilerplate-backend</name>
+    <description>webappboilerplate Backend</description>
 
     <properties>
         <java.version>21</java.version>

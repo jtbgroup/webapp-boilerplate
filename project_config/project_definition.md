@@ -4,7 +4,7 @@ The objective of this application is to generate Highlight Reports as project pr
 
 # Code repository
 
-https://github.com/jtbgroup/productgen.git
+https://github.com/jtbgroup/webappboilerplate.git
 
 # Users & Roles
 

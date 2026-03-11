@@ -13,7 +13,7 @@ COPY backend/pom.xml ./
 RUN mvn dependency:go-offline -q
 COPY backend/src ./src
 # Copy built frontend into Spring Boot static resources
-COPY --from=frontend-build /app/frontend/dist/productgen/browser ./src/main/resources/static
+COPY --from=frontend-build /app/frontend/dist/webappboilerplate/browser ./src/main/resources/static
 RUN mvn package -DskipTests -q
 
 # ─── Stage 3: Production image ─────────────────────────────────────────────

@@ -2,7 +2,7 @@
 
 ## Context
 
-This prompt is used to generate all the code and resources required to implement UC-01 (Authentication) in the productgen application.
+This prompt is used to generate all the code and resources required to implement UC-01 (Authentication) in the webappboilerplate application.
 
 ### Stack
 

@@ -7,7 +7,7 @@ init:
 		echo "⚠️  frontend already initialized, skipping."; \
 	else \
 		echo "🔧 Initializing Angular project..."; \
-		cd frontend && ng new productgen --standalone --routing --style=scss --skip-git --directory . && \
+		cd frontend && ng new webappboilerplate --standalone --routing --style=scss --skip-git --directory . && \
 		ng add @angular/material --skip-confirmation; \
 		echo "✅ Angular initialized. You can now run: make dev"; \
 	fi

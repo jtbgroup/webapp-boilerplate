@@ -3,15 +3,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: productgen
-      POSTGRES_USER: productgen
-      POSTGRES_PASSWORD: productgen
+      POSTGRES_DB: webappboilerplate
+      POSTGRES_USER: webappboilerplate
+      POSTGRES_PASSWORD: webappboilerplate
     ports:
       - "5432:5432"
     volumes:
       - pg_data_dev:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U productgen"]
+      test: ["CMD-SHELL", "pg_isready -U webappboilerplate"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -24,9 +24,9 @@ services:
       - "8080:8080"
       - "5005:5005"
     environment:
-      DB_URL: jdbc:postgresql://db:5432/productgen
-      DB_USERNAME: productgen
-      DB_PASSWORD: productgen
+      DB_URL: jdbc:postgresql://db:5432/webappboilerplate
+      DB_USERNAME: webappboilerplate
+      DB_PASSWORD: webappboilerplate
     depends_on:
       db:
         condition: service_healthy

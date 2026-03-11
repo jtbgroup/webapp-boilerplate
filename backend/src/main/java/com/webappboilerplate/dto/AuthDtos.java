@@ -1,4 +1,4 @@
-package com.productgen.dto;
+package com.webappboilerplate.dto;
 
 public final class AuthDtos {
 

@@ -1,6 +1,6 @@
-package com.productgen.security;
+package com.webappboilerplate.security;
 
-import com.productgen.repository.AppUserRepository;
+import com.webappboilerplate.repository.AppUserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

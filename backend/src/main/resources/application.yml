@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/productgen}
-    username: ${DB_USERNAME:productgen}
-    password: ${DB_PASSWORD:productgen}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/webappboilerplate}
+    username: ${DB_USERNAME:webappboilerplate}
+    password: ${DB_PASSWORD:webappboilerplate}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -33,4 +33,4 @@ server:
 logging:
   level:
     org.springframework.security: INFO
-    com.productgen: DEBUG
+    com.webappboilerplate: DEBUG

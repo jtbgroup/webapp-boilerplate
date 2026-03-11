@@ -1,4 +1,4 @@
-package com.productgen.entity;
+package com.webappboilerplate.entity;
 
 import jakarta.persistence.*;
 import java.util.UUID;

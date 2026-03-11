@@ -3,13 +3,13 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-productgen}
-      POSTGRES_USER: ${POSTGRES_USER:-productgen}
+      POSTGRES_DB: ${POSTGRES_DB:-webappboilerplate}
+      POSTGRES_USER: ${POSTGRES_USER:-webappboilerplate}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-productgen}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-webappboilerplate}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -22,8 +22,8 @@ services:
     ports:
       - "8090:8090"
     environment:
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-productgen}
-      DB_USERNAME: ${POSTGRES_USER:-productgen}
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-webappboilerplate}
+      DB_USERNAME: ${POSTGRES_USER:-webappboilerplate}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       SERVER_PORT: 8090
     depends_on:
