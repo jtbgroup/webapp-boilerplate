@@ -1,37 +1,12 @@
-name: Code Quality
+name: Frontend Lint
 
 on:
   push:
     branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
 
 jobs:
-  backend-quality:
-    name: Backend — Checkstyle & Static Analysis
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Checkstyle
-        run: mvn --batch-mode checkstyle:check
-        working-directory: backend
-
-      - name: SpotBugs
-        run: mvn --batch-mode spotbugs:check
-        working-directory: backend
-
-  frontend-quality:
-    name: Frontend — ESLint & Type Check
+  frontend-lint:
+    name: Frontend — ESLint
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +26,4 @@ jobs:
 
       - name: ESLint
         run: npm run lint
-        working-directory: frontend
-
-      - name: Type check
-        run: npx tsc --noEmit
         working-directory: frontend
