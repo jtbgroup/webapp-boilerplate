@@ -51,7 +51,9 @@ Each Flyway migration is traceable to a use case (SQL header comment: -- Use cas
 
 ## doc
 
-All the documentation must be in markdown format. Documentation is separated in 4 families:
+All the documentation must be in markdown format. Documentation is separated in 2 families: 
+
+### analysis
 
 **use cases** 
 
@@ -65,7 +67,7 @@ Located in the **user_stories** folder. Each user story lives in its own file: `
 
 Located in the **prompts** folder. Each UC has a dedicated generation prompt: `doc/analysis/prompts/UC-XX-<slug>-prompt.md`. The content of the prompt must allow the generation of the code for the specific use case. This includes the frontend, the backend, the flyway files, the resources and any other material required.
 
-**architecture**
+### architecture
 
 Located in the **architecture** folder. It will contain all the technical documentation of the project like SAD (software architecture documents), data base schemas, data model, api definitions, ...
 
@@ -74,8 +76,9 @@ The minimum required files are:
 - data-model.md : describing the backend datamodel
 - api.md: assemble the api of the backend defined in the other documentation files. This must be a potential base for a swagger for example.
 
-Beside those folders, a complementary file is needed to define the roles and access matrix: `doc/analysis/roles.md`. The file is at the root level of the **doc** folder
+### other
 
+Beside those folders, a complementary file is needed to define the roles and access matrix: `doc/roles.md`. The file is at the root level of the **doc** folder
 
 # Authentication:
 
