@@ -1,35 +1,58 @@
-services:
+version: '3.9'
 
-  db:
-    image: postgres:17
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: webappboilerplate-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-webappboilerplate}
-      POSTGRES_USER: ${POSTGRES_USER:-webappboilerplate}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webappboilerplate}
+      POSTGRES_DB: webappboilerplate
+      POSTGRES_USER: webappboilerplate
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-webappboilerplate}
+    ports:
+      - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - webappboilerplate-postgres-data:/var/lib/postgresql/data
+    networks:
+      - webappboilerplate-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-webappboilerplate}"]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U webappboilerplate" ]
+      interval: 10s
       timeout: 5s
-      retries: 10
-    restart: unless-stopped
+      retries: 5
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
+    container_name: webappboilerplate-app
     ports:
-      - "8080:8080"
+      - "8090:8090"
     environment:
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-webappboilerplate}
-      DB_USERNAME: ${POSTGRES_USER:-webappboilerplate}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-webappboilerplate}
-      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_PORT: 8090
+      DB_URL: jdbc:postgresql://postgres:5432/webappboilerplate
+      DB_USERNAME: webappboilerplate
+      DB_PASSWORD: ${DB_PASSWORD:-webappboilerplate}
+      DB_POOL_SIZE: 20
+      DB_MIN_IDLE: 5
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
+    networks:
+      - webappboilerplate-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8090/api/auth/me" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
 volumes:
-  pg_data:
+  webappboilerplate-postgres-data:
+    driver: local
+
+networks:
+  webappboilerplate-network:
+    driver: bridge

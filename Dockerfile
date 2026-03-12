@@ -1,43 +1,77 @@
-# ─── Stage 1: Build Frontend ───────────────────────────────────────────────
-FROM node:22-alpine AS frontend-build
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build -- --configuration production
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
-# ─── Stage 2: Build Backend ────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-21 AS backend-build
-WORKDIR /app/backend
-COPY backend/pom.xml ./
-RUN mvn dependency:go-offline -q
-COPY backend/src ./src
-RUN mvn package -DskipTests -q
+WORKDIR /build
 
-# ─── Stage 3: Production image (nginx + backend) ───────────────────────────
-FROM eclipse-temurin:21-jre-alpine
-RUN apk add --no-cache nginx
+# Copy project files
+COPY pom.xml .
+COPY backend/src ./backend/src
+COPY backend/pom.xml ./backend/
+
+# Build application
+RUN mvn clean package -DskipTests -q
+
+# Extract JAR
+RUN mkdir -p target/dependency && \
+    cd target/dependency && \
+    jar -xf ../*.jar
+
+# ============================================
+# Development stage (with H2 support)
+# ============================================
+FROM eclipse-temurin:21-jdk-alpine AS development
 
 WORKDIR /app
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Ensure nginx directories are writable by the app user
-RUN mkdir -p /var/log/nginx /var/run /etc/nginx/http.d && \
-    chown -R appuser:appgroup /var/log/nginx /var/run /etc/nginx/http.d /var/lib/nginx /run
+# Install curl for health checks and git for hot-reload scenarios
+RUN apk add --no-cache curl git
 
-# Copy built artifacts
-COPY --from=backend-build /app/backend/target/*.jar app.jar
-COPY --from=frontend-build /app/frontend/dist/webappboilerplate/browser /app/static
+# Copy built application from builder
+COPY --from=builder /build/target/dependency/BOOT-INF/lib /app/lib
+COPY --from=builder /build/target/dependency/BOOT-INF/classes /app
 
-# nginx config
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-RUN rm -f /etc/nginx/http.d/default.conf
-COPY docker/nginx.prod.conf /etc/nginx/http.d/default.conf
+# Create data directory for H2
+RUN mkdir -p /app/data && chmod 777 /app/data
 
-# Entrypoint that runs nginx + backend together
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Copy source for hot reload support
+COPY backend/src /app/backend/src
+COPY pom.xml /app/pom.xml
+
+# Expose debug and app ports
+EXPOSE 8080 5005
+
+# Development entrypoint with H2 profile
+ENV SPRING_PROFILES_ACTIVE=h2
+ENV JAVA_OPTS="-Xmx512m -Xms256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+ENTRYPOINT ["java", "-cp", "/app:/app/lib/*", "com.hlrattor.HlrattorApplication"]
+
+# ============================================
+# Production stage (PostgreSQL)
+# ============================================
+FROM eclipse-temurin:21-jdk-alpine AS production
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy built application from builder
+COPY --from=builder /build/target/dependency/BOOT-INF/lib /app/lib
+COPY --from=builder /build/target/dependency/BOOT-INF/classes /app
+COPY --from=builder /build/target/dependency/META-INF /app/META-INF
+
+# Create non-root user for security
+RUN addgroup -g 1001 appuser && \
+    adduser -D -u 1001 -G appuser appuser && \
+    chown -R appuser:appuser /app
 
 USER appuser
-EXPOSE 8080
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+EXPOSE 8090
+
+# Production entrypoint with PostgreSQL profile
+ENV SPRING_PROFILES_ACTIVE=postgres
+ENV JAVA_OPTS="-Xmx1024m -Xms512m"
+
+ENTRYPOINT ["java", "-cp", "/app:/app/lib/*", "com.webappboilerplate.WebappBoilerplateApplication"]

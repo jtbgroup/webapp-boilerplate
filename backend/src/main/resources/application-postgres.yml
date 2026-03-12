@@ -42,6 +42,5 @@ logging:
     com.hlrattor: DEBUG
 
 # Application version — injected at build time via Maven resource filtering
-# Updated automatically by: make set-version V=x.y.z
 application:
   version: @project.version@

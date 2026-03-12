@@ -110,3 +110,71 @@ dev-clean:
 dev-full-restart:
 	make dev-clean
 	make dev-start
+
+
+# ============================================
+# Database Management Targets
+# ============================================
+
+.PHONY: dev-h2 dev-postgres dev-stop build-h2 build-postgres db-clean
+
+# Start development environment with H2 (embedded, fastest iteration)
+dev-h2:
+	@echo "Starting development with H2 embedded database..."
+	docker-compose -f docker-compose.dev.yml up --build
+
+# Start development environment with PostgreSQL
+dev-postgres:
+	@echo "Starting development with PostgreSQL..."
+	docker-compose -f docker-compose.yml up --build
+
+# Stop all services
+dev-stop:
+	@echo "Stopping all services..."
+	docker-compose -f docker-compose.dev.yml down
+	docker-compose -f docker-compose.yml down
+
+# Build JAR with H2 profile for testing
+build-h2:
+	@echo "Building application with H2 profile..."
+	./mvnw clean package -Dspring.profiles.active=h2 -DskipTests
+
+# Build JAR with PostgreSQL profile
+build-postgres:
+	@echo "Building application with PostgreSQL profile..."
+	./mvnw clean package -Dspring.profiles.active=postgres -DskipTests
+
+# Clean database volumes
+db-clean:
+	@echo "Removing database volumes..."
+	docker volume rm webappboilerplate-h2-data || true
+	docker volume rm webappboilerplate-postgres-data || true
+	@echo "Database volumes cleaned"
+
+# Start production environment (PostgreSQL only)
+prod-up:
+	@echo "Starting production environment with PostgreSQL..."
+	docker-compose up -d
+	@echo "App running on http://localhost:8090"
+
+# Stop production environment
+prod-down:
+	@echo "Stopping production environment..."
+	docker-compose down
+
+# Show current database status
+db-status:
+	@echo "Database volumes:"
+	docker volume ls | grep webappboilerplate || echo "No webappboilerplate volumes found"
+	@echo "\nRunning containers:"
+	docker ps --filter "name=webappboilerplate" || echo "No webappboilerplate containers running"
+
+# Run application locally with H2 (no Docker)
+run-h2-local:
+	@echo "Running application locally with H2..."
+	./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
+
+# Run application locally with PostgreSQL (requires PostgreSQL running)
+run-postgres-local:
+	@echo "Running application locally with PostgreSQL..."
+	./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=postgres"
