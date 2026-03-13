@@ -118,22 +118,6 @@ dev-full-restart:
 
 .PHONY: dev-h2 dev-postgres dev-stop build-h2 build-postgres db-clean
 
-# Start development environment with H2 (embedded, fastest iteration)
-dev-h2:
-	@echo "Starting development with H2 embedded database..."
-	docker-compose -f docker-compose.dev.yml up --build
-
-# Start development environment with PostgreSQL
-dev-postgres:
-	@echo "Starting development with PostgreSQL..."
-	docker-compose -f docker-compose.yml up --build
-
-# Stop all services
-dev-stop:
-	@echo "Stopping all services..."
-	docker-compose -f docker-compose.dev.yml down
-	docker-compose -f docker-compose.yml down
-
 # Build JAR with H2 profile for testing
 build-h2:
 	@echo "Building application with H2 profile..."
@@ -151,16 +135,6 @@ db-clean:
 	docker volume rm webappboilerplate-postgres-data || true
 	@echo "Database volumes cleaned"
 
-# Start production environment (PostgreSQL only)
-prod-up:
-	@echo "Starting production environment with PostgreSQL..."
-	docker-compose up -d
-	@echo "App running on http://localhost:8090"
-
-# Stop production environment
-prod-down:
-	@echo "Stopping production environment..."
-	docker-compose down
 
 # Show current database status
 db-status:
