@@ -1,14 +1,12 @@
 -- Use case: UC-01
 
 CREATE TABLE app_user (
-    id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id        UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     username  VARCHAR(100) NOT NULL UNIQUE,
     password  VARCHAR(255) NOT NULL,
     role      VARCHAR(50)  NOT NULL,
     enabled   BOOLEAN      NOT NULL DEFAULT TRUE
 );
-
--- Default ADMIN user: admin / admin123 (BCrypt strength 12)
 INSERT INTO app_user (username, password, role, enabled)
 VALUES (
     'admin',
