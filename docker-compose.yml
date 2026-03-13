@@ -1,56 +1,66 @@
-version: '3.9'
-
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: webappboilerplate-postgres
-    environment:
-      POSTGRES_DB: webappboilerplate
-      POSTGRES_USER: webappboilerplate
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-webappboilerplate}
-    ports:
-      - "5432:5432"
-    volumes:
-      - webappboilerplate-postgres-data:/var/lib/postgresql/data
-    networks:
-      - webappboilerplate-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U webappboilerplate" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
+  # Application (Backend + Frontend + Nginx)
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
     container_name: webappboilerplate-app
     ports:
       - "8090:8090"
     environment:
-      SPRING_PROFILES_ACTIVE: postgres
+      # Profile: h2 (embedded) ou postgres (external)
+      SPRING_PROFILES_ACTIVE: ${DB_PROFILE:-h2}
       SERVER_PORT: 8090
-      DB_URL: jdbc:postgresql://postgres:5432/webappboilerplate
-      DB_USERNAME: webappboilerplate
+      
+      # PostgreSQL config (utilisé si SPRING_PROFILES_ACTIVE=postgres)
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-webappboilerplate}
+      DB_USER: ${DB_USER:-webappboilerplate}
       DB_PASSWORD: ${DB_PASSWORD:-webappboilerplate}
-      DB_POOL_SIZE: 20
-      DB_MIN_IDLE: 5
+      
+      # JVM tuning
+      JAVA_OPTS: "-Xmx1024m -Xms512m"
+    
     depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - webappboilerplate-network
+      - postgres
+    
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8090/api/auth/me" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    
     restart: unless-stopped
+    networks:
+      - webappboilerplate-network
+
+  # PostgreSQL (optionnel - utilisé si DB_PROFILE=postgres)
+  postgres:
+    image: postgres:17-alpine
+    container_name: webappboilerplate-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-webappboilerplate}
+      POSTGRES_USER: ${DB_USER:-webappboilerplate}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-webappboilerplate}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-webappboilerplate}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - webappboilerplate-network
+    profiles:
+      - postgres
 
 volumes:
-  webappboilerplate-postgres-data:
+  postgres_data:
     driver: local
 
 networks:
