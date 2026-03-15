@@ -139,3 +139,24 @@ quality-frontend:
 	else \
 		echo "⚠️  node_modules not found. Run: make init"; \
 	fi
+
+
+
+# ============================================
+# DEMO DATA SEED
+# ============================================
+# Usage:
+#   make seed-demo                            # default users.json
+#   make seed-demo DATA=scripts/demo-data/users-real.json
+seed-demo:
+	@echo "🌱 Seeding demo data (dev — http://localhost:8081)..."
+	@chmod +x scripts/seed-demo.sh
+	@scripts/seed-demo.sh http://localhost:8081 admin admin123 $(DATA)
+	@echo ""
+ 
+seed-demo-prod:
+	@echo "🌱 Seeding demo data (prod — http://localhost:8090)..."
+	@chmod +x scripts/seed-demo.sh
+	@scripts/seed-demo.sh http://localhost:8090 admin admin123 $(DATA)
+	@echo ""
+ 
