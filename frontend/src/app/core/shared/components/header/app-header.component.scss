@@ -1,0 +1,177 @@
+:host {
+  display: block;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%);
+  box-shadow: 0 2px 8px rgba(26, 35, 126, 0.35);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+// ── Title ─────────────────────────────────────────────────────────────────────
+
+.app-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: white;
+  white-space: nowrap;
+  font-family: Roboto, sans-serif;
+  flex-shrink: 0;
+}
+
+.title-accent {
+  color: #90caf9;
+}
+
+// ── Separators ────────────────────────────────────────────────────────────────
+
+.nav-divider-left {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 16px 0 20px;
+  flex-shrink: 0;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+// ── Nav buttons (natifs, zéro interférence MDC) ───────────────────────────────
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// ── User pill (natif) ─────────────────────────────────────────────────────────
+
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-family: Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  max-width: 220px;
+  flex-shrink: 0;
+
+  mat-icon {
+    color: white;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+// ── User dropdown ─────────────────────────────────────────────────────────────
+
+.user-menu-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.user-role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a237e;
+  background: #e8eaf6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  width: fit-content;
+  margin-bottom: 2px;
+}
+
+.username-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.logout-item {
+  color: #c62828 !important;
+
+  mat-icon {
+    color: #c62828 !important;
+  }
+}
