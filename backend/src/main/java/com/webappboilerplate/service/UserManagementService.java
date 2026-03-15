@@ -1,18 +1,20 @@
 package com.webappboilerplate.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.webappboilerplate.dto.UserDtos;
 import com.webappboilerplate.entity.AppUser;
 import com.webappboilerplate.entity.UserAudit;
 import com.webappboilerplate.repository.AppUserRepository;
 import com.webappboilerplate.repository.UserAuditRepository;
 import com.webappboilerplate.security.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserManagementService {
@@ -23,9 +25,9 @@ public class UserManagementService {
     private final SessionRegistry sessionRegistry;
 
     public UserManagementService(AppUserRepository userRepository,
-                                 UserAuditRepository auditRepository,
-                                 PasswordEncoder passwordEncoder,
-                                 SessionRegistry sessionRegistry) {
+                                  UserAuditRepository auditRepository,
+                                  PasswordEncoder passwordEncoder,
+                                  SessionRegistry sessionRegistry) {
         this.userRepository = userRepository;
         this.auditRepository = auditRepository;
         this.passwordEncoder = passwordEncoder;
@@ -35,13 +37,13 @@ public class UserManagementService {
     public List<UserDtos.UserResponse> listUsers() {
         return userRepository.findAll().stream()
                 .map(this::toResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public String getUsernameById(UUID userId) {
         return userRepository.findById(userId)
                 .map(AppUser::getUsername)
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Transactional
@@ -53,7 +55,7 @@ public class UserManagementService {
         AppUser user = new AppUser();
         user.setUsername(request.username());
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(AppUser.Role.valueOf(request.role()));
+        user.setRoles(parseRoles(request.roles()));
         user.setEnabled(Boolean.TRUE.equals(request.enabled()));
 
         AppUser saved = userRepository.save(user);
@@ -68,8 +70,8 @@ public class UserManagementService {
 
         boolean updated = false;
 
-        if (request.role() != null) {
-            user.setRole(AppUser.Role.valueOf(request.role()));
+        if (request.roles() != null && !request.roles().isEmpty()) {
+            user.setRoles(parseRoles(request.roles()));
             updated = true;
         }
         if (request.enabled() != null) {
@@ -115,8 +117,20 @@ public class UserManagementService {
         recordAudit("CHANGE_PASSWORD", username, username, null);
     }
 
+    private Set<AppUser.Role> parseRoles(List<String> roleNames) {
+        if (roleNames == null || roleNames.isEmpty()) {
+            return EnumSet.noneOf(AppUser.Role.class);
+        }
+        return roleNames.stream()
+                .map(AppUser.Role::valueOf)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(AppUser.Role.class)));
+    }
+
     private UserDtos.UserResponse toResponse(AppUser user) {
-        return new UserDtos.UserResponse(user.getId(), user.getUsername(), user.getRole().name(), user.isEnabled());
+        List<String> roles = user.getRoles().stream()
+                .map(Enum::name)
+                .collect(Collectors.toList());
+        return new UserDtos.UserResponse(user.getId(), user.getUsername(), roles, user.isEnabled());
     }
 
     private void recordAudit(String action, String performedBy, String targetUser, String details) {

@@ -10,6 +10,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { UserService, UserManagementDto } from '../../../core/services/user.service';
 
+const ALL_ROLES = ['ADMIN', 'PROJECT_MANAGER'];
+
 @Component({
   selector: 'app-user-list',
   standalone: true,
@@ -36,7 +38,7 @@ import { UserService, UserManagementDto } from '../../../core/services/user.serv
       <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
         <mat-form-field appearance="outline">
           <mat-label>Username</mat-label>
-          <input matInput formControlName="username" [disabled]="!!editingUser" required />
+          <input matInput formControlName="username" [readonly]="!!editingUser" required />
         </mat-form-field>
 
         @if (!editingUser) {
@@ -47,10 +49,11 @@ import { UserService, UserManagementDto } from '../../../core/services/user.serv
         }
 
         <mat-form-field appearance="outline">
-          <mat-label>Role</mat-label>
-          <mat-select formControlName="role" required>
-            <mat-option value="ADMIN">ADMIN</mat-option>
-            <mat-option value="PROJECT_MANAGER">PROJECT_MANAGER</mat-option>
+          <mat-label>Roles</mat-label>
+          <mat-select formControlName="roles" multiple required>
+            @for (role of availableRoles; track role) {
+              <mat-option [value]="role">{{ role }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
 
@@ -76,9 +79,13 @@ import { UserService, UserManagementDto } from '../../../core/services/user.serv
         <td mat-cell *matCellDef="let user">{{ user.username }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef>Role</th>
-        <td mat-cell *matCellDef="let user">{{ user.role }}</td>
+      <ng-container matColumnDef="roles">
+        <th mat-header-cell *matHeaderCellDef>Roles</th>
+        <td mat-cell *matCellDef="let user">
+          @for (role of user.roles; track role) {
+            <span class="role-chip">{{ role }}</span>
+          }
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="enabled">
@@ -104,9 +111,7 @@ import { UserService, UserManagementDto } from '../../../core/services/user.serv
     }
 
     @if (!users?.length) {
-      <div class="empty">
-        No users found.
-      </div>
+      <div class="empty">No users found.</div>
     }
   `,
   styles: [
@@ -117,6 +122,17 @@ import { UserService, UserManagementDto } from '../../../core/services/user.serv
       .user-table { width: 100%; margin-top: 16px; }
       .empty { padding: 24px; text-align: center; color: rgba(0, 0, 0, 0.6); }
       .error { color: #c62828; margin-top: 8px; }
+      .role-chip {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        background: #e8eaf6;
+        color: #1a237e;
+        border-radius: 4px;
+        padding: 2px 7px;
+        margin-right: 4px;
+      }
     `
   ]
 })
@@ -124,13 +140,15 @@ export class UserListComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
 
+  readonly availableRoles = ALL_ROLES;
+
   users: UserManagementDto[] = [];
-  displayedColumns = ['username', 'role', 'enabled', 'actions'];
+  displayedColumns = ['username', 'roles', 'enabled', 'actions'];
 
   userForm = this.fb.group({
     username: ['', Validators.required],
     password: ['', Validators.required],
-    role: this.fb.control<'ADMIN' | 'PROJECT_MANAGER'>('PROJECT_MANAGER', Validators.required),
+    roles: this.fb.control<string[]>([], Validators.required),
     enabled: [true],
   });
 
@@ -146,7 +164,7 @@ export class UserListComponent implements OnInit {
     this.editingUser = null;
     this.error = null;
     this.formVisible = true;
-    this.userForm.reset({ role: 'PROJECT_MANAGER', enabled: true });
+    this.userForm.reset({ roles: [], enabled: true });
     this.userForm.get('password')?.setValidators([Validators.required]);
     this.userForm.get('password')?.updateValueAndValidity();
   }
@@ -158,7 +176,7 @@ export class UserListComponent implements OnInit {
     this.userForm.reset({
       username: user.username,
       password: '',
-      role: user.role as 'ADMIN' | 'PROJECT_MANAGER',
+      roles: [...user.roles],
       enabled: user.enabled,
     });
     this.userForm.get('password')?.clearValidators();
@@ -172,49 +190,29 @@ export class UserListComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.userForm.invalid) {
-      return;
-    }
+    if (this.userForm.invalid) return;
 
-    const value = this.userForm.value as {
-      username: string | null;
-      password: string | null;
-      role: 'ADMIN' | 'PROJECT_MANAGER' | null;
-      enabled: boolean | null;
-    };
-
-    const role = value.role ?? 'PROJECT_MANAGER';
-    const enabled = value.enabled ?? false;
+    const { username, password, roles, enabled } = this.userForm.value;
 
     if (this.editingUser) {
       this.userService.updateUser(this.editingUser.id, {
-        role,
-        enabled,
+        roles: roles ?? [],
+        enabled: enabled ?? false,
       }).subscribe({
-        next: () => {
-          this.reload();
-          this.cancel();
-        },
-        error: () => {
-          this.error = 'Unable to update user';
-        }
+        next: () => { this.reload(); this.cancel(); },
+        error: () => { this.error = 'Unable to update user'; }
       });
       return;
     }
 
     this.userService.createUser({
-      username: value.username ?? '',
-      password: value.password ?? '',
-      role,
-      enabled,
+      username: username ?? '',
+      password: password ?? '',
+      roles: roles ?? [],
+      enabled: enabled ?? true,
     }).subscribe({
-      next: () => {
-        this.reload();
-        this.cancel();
-      },
-      error: () => {
-        this.error = 'Unable to create user';
-      }
+      next: () => { this.reload(); this.cancel(); },
+      error: () => { this.error = 'Unable to create user'; }
     });
   }
 

@@ -1,6 +1,8 @@
 package com.webappboilerplate.entity;
 
 import jakarta.persistence.*;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -11,18 +13,17 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
-
-    
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "app_user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private Role role;
+    @Column(name = "role", length = 50)
+    private Set<Role> roles = EnumSet.noneOf(Role.class);
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -54,12 +55,12 @@ public class AppUser {
         this.password = password;
     }
 
-    public Role getRole() {
-        return role;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     public boolean isEnabled() {
@@ -68,5 +69,9 @@ public class AppUser {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean hasRole(Role role) {
+        return roles.contains(role);
     }
 }
