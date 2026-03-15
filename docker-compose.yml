@@ -23,8 +23,10 @@ services:
       JAVA_OPTS: "-Xmx1024m -Xms512m"
     
     depends_on:
-      - postgres
-    
+      - postgres:
+          condition: service_healthy
+          required: false  
+          
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health || exit 1"]
       interval: 30s
